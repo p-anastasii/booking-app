@@ -1,28 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, MenuItem, Container, Typography, CircularProgress, Paper } from "@mui/material";
-import axios from "axios";
+import { fetchDestinationsRequest } from "../store/hotelsSlice";
 
 const Main = () => {
-    const [destinations, setDestinations] = useState([]);
-    const [selectedDestination, setSelectedDestination] = useState("");
-    const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+    const destinations = useSelector((state) => state.hotels.destinations);
+    const loading = useSelector((state) => state.hotels.loading);
+    const [selectedDestination, setSelectedDestination] = useState("");
 
     useEffect(() => {
-        setLoading(true);
-        axios.get("http://localhost:5000/hotels")
-            .then((response) => {
-                if (Array.isArray(response.data)) {
-                    const uniqueCities = [...new Set(response.data.map((hotel) => hotel.city))];
-                    setDestinations(uniqueCities.map((city, index) => ({ id: index, name: city })));
-                } else {
-                    console.error("Unexpected data format", response.data);
-                }
-            })
-            .catch((error) => console.error("Error fetching destinations:", error))
-            .finally(() => setLoading(false));
-    }, []);
+        dispatch(fetchDestinationsRequest());
+    }, [dispatch]);
 
     const handleSubmit = () => {
         if (!selectedDestination) {
@@ -47,8 +38,8 @@ const Main = () => {
                         variant="outlined"
                     >
                         {destinations.length > 0 ? (
-                            destinations.map((city) => (
-                                <MenuItem key={city.id} value={city.name}>{city.name}</MenuItem>
+                            destinations.map((city, index) => (
+                                <MenuItem key={index} value={city}>{city}</MenuItem>
                             ))
                         ) : (
                             <MenuItem disabled>No destinations available</MenuItem>
@@ -70,6 +61,7 @@ const Main = () => {
 };
 
 export default Main;
+
 
 
 
